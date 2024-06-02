@@ -12,8 +12,6 @@ function into_sql(array $formdata)
 
     // Check we have an array to work with
     if (!is_array($formdata)) {
-        throw HTTPException('http_build_query() Parameter 1 expected to be Array or Object. Incorrect value given.',
-            501);
         return false;
     }
 
@@ -43,7 +41,7 @@ function into_sql(array $formdata)
 
         // If the value is an array, recursively parse it
         if (is_array($val) || is_object($val)) {
-            array_push($tmp, http_build_query($val, urlencode($key)));
+            array_push($tmp, into_sql($val, urlencode($key)));
             continue;
         }
 
@@ -67,7 +65,7 @@ class ORMObject {
         $this->table = $table;
     }
 
-    // On retire les variables en trop lors de nos conditions.
+    // Filter any useless var not known from the called class.
     public static function filter_array_class ($k){
         return array_key_exists($k, get_class_vars(get_called_class()));
     }
@@ -112,7 +110,7 @@ class ORMObject {
             return null;
         }
 
-        // On filtre le find avec
+        // Filter useless var
         $find = array_filter($find, $classname."::filter_array_class", ARRAY_FILTER_USE_KEY );
         global $db;
 
@@ -168,7 +166,6 @@ class ORMObject {
         global $db;
 
         if (isset($find)) {
-            // On filtre le find avec
             $find = array_filter($find, $classname."::filter_array_class", ARRAY_FILTER_USE_KEY );
         }
 
@@ -229,24 +226,9 @@ class ORMObject {
             // TODO do exception;
             return null;
         }
-
-        $attributs = get_class_vars($classname);
-
-        $html_code = "<div class=\"w3-container w3-card w3-border w3-col\">\n";
-            foreach(array_keys($attributs) as $value) {
-                if ( $value === "table" || $value === "id" ) continue;
-                $html_code .= "<div class=\"w3-left-align\">".$value.": ".$this->$value."</div class=\"w3-left-align\">";
-            }
-        $html_code .= "\n</div>\n";
-
+	$html_code = "your HTML CODE?";
         return $html_code;
     }
 };
-
-// On évite les includes circulaires....
-include './classes/objects/category.php';
-include './classes/objects/vote.php';
-include './classes/objects/user.php';
-include './classes/objects/post.php';
 
 ?>
